@@ -1,5 +1,6 @@
 import os
 from sre_parse import Tokenizer
+from xml.dom.minidom import ReadOnlySequentialNamedNodeMap
 import numpy as np
 import tensorflow as tf
 
@@ -51,14 +52,17 @@ class BertTrainer:
         if not self.tokenizer:
             return None
         tokens =  self.tokenizer.tokenize(text_str)
+        tokens.append('[SEP]')
         return self.tokenizer.convert_tokens_to_ids(tokens)
 
     def run_inference(self, input_arr):
         result = []
+        input_encoded_tensors = []
         for i in input_arr:
             i_token = self.__run_tokenizer(i)
             result.append(i_token)
-        
+            input_encoded_tensors.append(tf.ragged.constant(i_token))
+        print(input_encoded_tensors[0].shape)
         return result
 
 
@@ -66,5 +70,4 @@ class BertTrainer:
 if __name__ == "__main__":
     bert_trainer = BertTrainer()
     input_arr = ['this is a test','i love my country','I hate <mask>','i hate germany']
-    print(bert_trainer.run_inference(input_arr=input_arr))
-    print('ran')
+    bert_trainer.run_inference(input_arr=input_arr)
